@@ -1,0 +1,1465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>KAUST Museum - Interactive Map</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f0f2f5;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            overflow: hidden;
+        }
+
+        #loginScreen {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            max-width: 450px;
+            width: 100%;
+            text-align: center;
+            display: block;
+        }
+
+        /* ─── LOGO SECTION ─── */
+        .logo-section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 100px !important;  /* ← Forces the spacing */
+            margin-bottom: 15px;
+        }
+
+/* ─── LOGO SECTION ─── */
+	.logo-section {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		gap: 30px;
+		margin-bottom: 15px;
+	}
+
+	.logo-section img {
+		height: 99px;
+		width: auto;
+		object-fit: contain;
+	}
+
+/* ─── TABLET ─── */
+	@media (max-width: 768px) {
+		.logo-section {
+        	 gap: 25px;
+	}
+   		 .logo-section img {
+        	  height: 80px !important;
+    	}
+	}
+
+/* ─── PHONE ─── */
+	@media (max-width: 480px) {
+		.logo-section {
+		 gap: 60px !important;  /* ← Added !important */
+	}
+    		.logo-section img {
+		 height: 60px !important;
+    	}
+	}
+
+/* ─── SMALL PHONE ─── */
+	@media (max-width: 380px) {
+	.logo-section {
+		gap: 15px;
+    }
+	.logo-section img {
+		height: 60px !important;
+    }
+}
+
+        #loginScreen .main-icon {
+            font-size: 48px;
+            margin-bottom: 5px;
+        }
+        #loginScreen h1 {
+            font-size: 28px;
+            color: #1a1a2e;
+            margin-bottom: 5px;
+        }
+        #loginScreen .sub {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 6px;
+        }
+        #loginScreen .email {
+            color: #4f46e5;
+            font-size: 14px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        /* ─── BUTTON ROW FOR IMAGES ─── */
+        .image-button-row {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .image-btn {
+            background: #f1f5f9;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 8px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #1e293b;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            justify-content: center;
+            min-width: 80px;
+        }
+
+        .image-btn:hover {
+            background: #4f46e5;
+            color: white;
+            border-color: #4f46e5;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+
+        .image-btn:active {
+            transform: scale(0.96);
+        }
+
+        .image-btn .icon {
+            font-size: 18px;
+        }
+
+        /* ─── LOGIN FORM ─── */
+        #loginScreen input {
+            width: 100%;
+            padding: 14px 16px;
+            margin-bottom: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: border-color 0.2s;
+        }
+        #loginScreen input:focus { outline: none; border-color: #4f46e5; }
+        #loginScreen .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 8px;
+        }
+        #loginScreen .login-btn:hover { background: #4338ca; }
+        #loginError {
+            color: #ef4444;
+            font-size: 14px;
+            margin-top: 12px;
+            display: none;
+        }
+
+        /* ─── MAIN APP (unchanged from your working version) ─── */
+        #mainApp {
+            display: none;
+            width: 100%;
+            max-width: 1400px;
+            height: 100vh;
+            max-height: 1000px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+            flex-direction: row;
+        }
+
+        .left-panel {
+            width: 340px;
+            min-width: 280px;
+            background: #f8fafc;
+            padding: 16px 16px 16px 20px;
+            overflow-y: auto;
+            border-right: 2px solid #e9edf2;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .left-panel .header {
+            text-align: center;
+            padding-bottom: 14px;
+            border-bottom: 2px solid #e9edf2;
+            margin-bottom: 14px;
+            flex-shrink: 0;
+        }
+        .left-panel .header h2 { font-size: 22px; color: #1a1a2e; }
+        .left-panel .header p { font-size: 13px; color: #64748b; margin-top: 4px; }
+        .left-panel .header .user-badge {
+            display: inline-block;
+            background: #eef2ff;
+            color: #4f46e5;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            margin-top: 6px;
+            word-break: break-all;
+        }
+
+        .button-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        .button-grid::-webkit-scrollbar { width: 5px; }
+        .button-grid::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+        .button-grid::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+        .location-btn {
+            padding: 8px 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #1e293b;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            flex-shrink: 0;
+        }
+        .location-btn:hover { transform: translateX(4px); }
+        .location-btn:active { transform: scale(0.98); }
+        .location-btn .code {
+            background: #e9edf2;
+            color: #475569;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .location-btn .code.multi { background: #dbeafe; color: #1d4ed8; }
+        .location-btn.active {
+            border-color: #4f46e5;
+            background: #eef2ff;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+        }
+
+        .btn-intro { border-color: #8b5cf6; background: #f5f3ff; }
+        .btn-intro:hover { background: #ede9fe; }
+        .btn-intro .code { background: #ddd6fe; color: #5b21b6; }
+
+        .btn-astronomy { border-color: #0ea5e9; background: #f0f9ff; }
+        .btn-astronomy:hover { background: #e0f2fe; }
+        .btn-astronomy .code { background: #bae6fd; color: #0369a1; }
+
+        .btn-biology { border-color: #22c55e; background: #f0fdf4; }
+        .btn-biology:hover { background: #dcfce7; }
+        .btn-biology .code { background: #bbf7d0; color: #15803d; }
+
+        .btn-history { border-color: #f59e0b; background: #fffbeb; }
+        .btn-history:hover { background: #fef3c7; }
+        .btn-history .code { background: #fde68a; color: #b45309; }
+
+        .btn-engineering { border-color: #ef4444; background: #fef2f2; }
+        .btn-engineering:hover { background: #fecaca; }
+        .btn-engineering .code { background: #fca5a5; color: #b91c1c; }
+
+        .btn-culture { border-color: #ec4899; background: #fdf2f8; }
+        .btn-culture:hover { background: #fce7f3; }
+        .btn-culture .code { background: #f9a8d4; color: #be185d; }
+
+        .btn-science { border-color: #14b8a6; background: #f0fdfa; }
+        .btn-science:hover { background: #ccfbf1; }
+        .btn-science .code { background: #99f6e4; color: #0d9488; }
+
+        .btn-water { border-color: #0d9488; background: #f0fdfa; }
+        .btn-water:hover { background: #ccfbf1; }
+        .btn-water .code { background: #99f6e4; color: #0d9488; }
+
+        .right-panel {
+            flex: 1;
+            background: #f1f5f9;
+            position: relative;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        .map-wrapper {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+            touch-action: none;
+            cursor: grab;
+        }
+        .map-wrapper:active { cursor: grabbing; }
+
+        .map-inner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform-origin: center center;
+            touch-action: none;
+            transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .map-inner img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            user-select: none;
+            -webkit-user-drag: none;
+            pointer-events: none;
+        }
+
+        .highlight-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .highlight-spot {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: auto !important;
+            cursor: pointer;
+            opacity: 0;
+            z-index: 10;
+        }
+
+        .highlight-spot .ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            border: 4px solid #ef4444;
+            animation: ringPulse 1.2s ease-out infinite;
+            pointer-events: none;
+        }
+
+        .highlight-spot .ring:nth-child(1) { width: 100%; height: 100%; animation-delay: 0s; }
+        .highlight-spot .ring:nth-child(2) { width: 70%; height: 70%; animation-delay: 0.4s; }
+        .highlight-spot .ring:nth-child(3) { width: 40%; height: 40%; animation-delay: 0.8s; }
+
+        @keyframes ringPulse {
+            0% { transform: translate(-50%, -50%) scale(0.3); opacity: 1; border-color: #ef4444; }
+            100% { transform: translate(-50%, -50%) scale(1.8); opacity: 0; border-color: #fca5a5; }
+        }
+
+        .highlight-spot .label {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 2;
+            border: 2px solid #ef4444;
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+        }
+
+        .highlight-spot .click-hint {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.7);
+            color: rgba(255,255,255,0.8);
+            font-size: 11px;
+            padding: 3px 12px;
+            border-radius: 12px;
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0.8;
+            font-weight: 400;
+        }
+
+        .highlight-spot.fade-out {
+            animation: fadeOut 0.6s forwards;
+        }
+
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        .zoom-controls {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 20;
+        }
+
+        .zoom-controls button {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            border: none;
+            background: white;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+            font-size: 22px;
+            font-weight: 700;
+            color: #1e293b;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            touch-action: manipulation;
+        }
+
+        .zoom-controls button:hover {
+            background: #4f46e5;
+            color: white;
+            transform: scale(1.05);
+        }
+        .zoom-controls button:active { transform: scale(0.92); }
+        .zoom-controls .reset-btn { background: #ef4444; color: white; }
+        .zoom-controls .reset-btn:hover { background: #dc2626; }
+
+        /* ─── POPUP OVERLAY ─── */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.88);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            animation: popupFadeIn 0.3s ease;
+        }
+
+        .popup-overlay img {
+            max-width: 92%;
+            max-height: 92%;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+            object-fit: contain;
+            pointer-events: none;
+        }
+
+        .popup-overlay .close-hint {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255,255,255,0.6);
+            font-size: 14px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: rgba(0,0,0,0.4);
+            padding: 8px 20px;
+            border-radius: 30px;
+            pointer-events: none;
+        }
+
+        .popup-overlay .timer-bar {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 4px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .popup-overlay .timer-bar .fill {
+            height: 100%;
+            background: #ef4444;
+            border-radius: 4px;
+            animation: timerShrink 20s linear forwards;
+        }
+
+        @keyframes timerShrink {
+            0% { width: 100%; }
+            100% { width: 0%; }
+        }
+
+        @keyframes popupFadeIn {
+            0% { opacity: 0; transform: scale(0.95); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        /* ─── RESPONSIVE ─── */
+        @media (max-width: 768px) {
+            #mainApp { flex-direction: column; max-height: none; height: 100vh; border-radius: 12px; max-width: 100%; }
+            .left-panel { width: 100%; min-width: unset; height: 35vh; border-right: none; border-bottom: 2px solid #e9edf2; padding: 10px; }
+            .right-panel { height: 65vh; }
+            .location-btn { padding: 5px 10px; font-size: 11px; }
+            .location-btn .code { font-size: 10px; padding: 1px 8px; }
+            .left-panel .header h2 { font-size: 16px; }
+            .left-panel .header p { font-size: 11px; }
+            .left-panel .header .user-badge { font-size: 11px; padding: 2px 10px; }
+            #loginScreen { padding: 24px; margin: 10px; }
+            #loginScreen h1 { font-size: 22px; }
+            .highlight-spot { width: 60px; height: 60px; }
+            .highlight-spot .label { font-size: 10px; padding: 2px 8px; }
+            .highlight-spot .click-hint { font-size: 9px; bottom: -24px; }
+            .zoom-controls { bottom: auto; top: 12px; right: 12px; gap: 6px; }
+            .zoom-controls button { width: 40px; height: 40px; font-size: 18px; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.2); }
+            .button-grid { gap: 4px; }
+            .popup-overlay img { max-width: 96%; max-height: 96%; }
+            .popup-overlay .timer-bar { width: 150px; bottom: 70px; }
+            .logo-section img { height: 40px; }
+            .image-btn { font-size: 12px; padding: 6px 12px; min-width: 60px; }
+        }
+
+        @media (max-width: 480px) {
+            .left-panel { height: 32vh; padding: 8px; }
+            .right-panel { height: 68vh; }
+            .location-btn { font-size: 10px; padding: 4px 8px; }
+            .location-btn .code { font-size: 9px; padding: 1px 6px; }
+            .left-panel .header h2 { font-size: 14px; }
+            .left-panel .header p { font-size: 10px; }
+            .left-panel .header .user-badge { font-size: 10px; padding: 2px 8px; }
+            .highlight-spot { width: 50px; height: 50px; }
+            .highlight-spot .label { font-size: 9px; padding: 2px 6px; border-width: 1px; }
+            .highlight-spot .click-hint { font-size: 8px; bottom: -20px; }
+            .highlight-spot .ring { border-width: 3px; }
+            .zoom-controls { top: 10px; right: 10px; gap: 5px; }
+            .zoom-controls button { width: 36px; height: 36px; font-size: 16px; border-radius: 10px; }
+            .popup-overlay .timer-bar { width: 120px; bottom: 60px; }
+            .logo-section { gap: 10px; }
+            .logo-section img { height: 32px; }
+            .image-button-row { gap: 8px; }
+            .image-btn { font-size: 11px; padding: 5px 10px; min-width: 50px; }
+        }
+
+        @media (max-width: 380px) {
+            .zoom-controls button { width: 32px; height: 32px; font-size: 14px; border-radius: 8px; }
+            .zoom-controls { top: 8px; right: 8px; gap: 4px; }
+            .left-panel { height: 30vh; }
+            .right-panel { height: 70vh; }
+            .location-btn { font-size: 9px; padding: 3px 6px; }
+            .highlight-spot .click-hint { display: none; }
+            .logo-section img { height: 28px; }
+            .image-btn { font-size: 10px; padding: 4px 8px; min-width: 40px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ─── LOGIN SCREEN ─── -->
+    <div id="loginScreen">
+        <!-- Two Logos -->
+        <div class="logo-section">
+            <img src="https://raw.githubusercontent.com/thakursaajid-design/m01ElephantClockSGV/main/aMACC.png" alt="MACC Icon" />
+            <img src="https://raw.githubusercontent.com/thakursaajid-design/m01ElephantClockSGV/main/aKAUSTtower.png" alt="KAUST Tower Icon" />
+        </div>
+
+        <h1>KAUST Museum</h1>
+        <p class="sub">Click any button → location highlight on map.</p>
+        <p class="sub">More interesting technical information there.</p>
+        <p class="email">📧 thakursaajid@gmail.com</p>
+
+        <!-- Three Image Buttons -->
+        <div class="image-button-row">
+            <button class="image-btn" onclick="openImagePopup('https://raw.githubusercontent.com/thakursaajid-design/m01ElephantClockSGV/main/aKmuseum1.jpg', 'Museum Image 1')">
+                <span class="icon"></span> Image 1
+            </button>
+            <button class="image-btn" onclick="openImagePopup('https://raw.githubusercontent.com/thakursaajid-design/m01ElephantClockSGV/main/aKmuseum2.jpg', 'Museum Image 2')">
+                <span class="icon"></span> Image 2
+            </button>
+            <button class="image-btn" onclick="openImagePopup('https://raw.githubusercontent.com/thakursaajid-design/m01ElephantClockSGV/main/aKmuseum3.jpg', 'Museum Image 3')">
+                <span class="icon"></span> Image 3
+            </button>
+        </div>
+
+        <!-- Login Form -->
+        <input type="text" id="usernameInput" placeholder="Username" value="Saajid_Thakur" />
+        <input type="password" id="passwordInput" placeholder="KAUST ID" value="105475" />
+
+        <button class="login-btn" onclick="handleLogin()">🔓 Login</button>
+        <p id="loginError">❌ Invalid username or KAUST ID. Please retry.</p>
+    </div>
+
+    <!-- ─── MAIN APP (unchanged) ─── -->
+    <div id="mainApp">
+
+        <div class="left-panel">
+            <div class="header">
+                <h2>🏛️ KAUST Museum</h2>
+                <p>Click any button → location highlight on map.</p>
+                <p style="font-size:11px; color:#94a3b8; margin-top:1px;">More interesting technical information there.</p>
+                <span class="user-badge" id="userBadge">📧 thakursaajid@gmail.com</span>
+            </div>
+            <div class="button-grid" id="buttonGrid"></div>
+        </div>
+
+        <div class="right-panel">
+            <div class="map-wrapper" id="mapWrapper">
+                <div class="map-inner" id="mapInner">
+                    <img id="mapImage" src="https://raw.githubusercontent.com/thakursaajid-design/museummap.svg/main/MuseumMap.svg" alt="KAUST Museum Map" draggable="false" />
+                    <div class="highlight-container" id="highlightContainer"></div>
+                </div>
+            </div>
+
+            <div class="zoom-controls">
+                <button onclick="zoomIn()" title="Zoom In">＋</button>
+                <button onclick="zoomOut()" title="Zoom Out">−</button>
+                <button class="reset-btn" onclick="resetView()" title="Reset View">⟲</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // ─── SVG VIEWBOX DIMENSIONS ───
+        const SVG_WIDTH = 5217;
+        const SVG_HEIGHT = 2193;
+
+        // ─── IMAGE URLS FOR EACH LOCATION ───
+        const imageUrls = {
+            elephant: 'https://raw.githubusercontent.com/thakursaajid-design/m01ElephantClockSGV/main/m01ElephantClock.jpg',
+            castle: 'https://raw.githubusercontent.com/thakursaajid-design/m01ElephantClockSGV/main/m02CastleClock.jpg',
+            waterwheel: 'https://raw.githubusercontent.com/thakursaajid-design/m01ElephantClockSGV/main/m03WaterWheel.jpg',
+            sliding: 'https://raw.githubusercontent.com/thakursaajid-design/m01ElephantClockSGV/main/m04Sliding.jpg',
+            flipbook: 'https://raw.githubusercontent.com/thakursaajid-design/m01ElephantClockSGV/main/m05FlipBook.jpg',
+            learningtower: 'https://raw.githubusercontent.com/thakursaajid-design/m01ElephantClockSGV/main/m06Learning.jpg',
+            astronomy: 'https://raw.githubusercontent.com/thakursaajid-design/m01ElephantClockSGV/main/m07Astronomy.jpg',
+            objecttheater: 'https://raw.githubusercontent.com/thakursaajid-design/m01ElephantClockSGV/main/m08ObjectTheater.jpg',
+            townplanning: 'https://raw.githubusercontent.com/thakursaajid-design/m01ElephantClockSGV/main/m09TownPlanning.jpg',
+            windmill: 'https://raw.githubusercontent.com/thakursaajid-design/m01ElephantClockSGV/main/m10Windmill.jpg',
+            windtower: 'https://raw.githubusercontent.com/thakursaajid-design/m01ElephantClockSGV/main/m11WindTower.jpg',
+            intro: 'https://raw.githubusercontent.com/thakursaajid-design/m01ElephantClockSGV/main/m12Intro.jpg',
+            books: 'https://raw.githubusercontent.com/thakursaajid-design/m01ElephantClockSGV/main/m13Books.jpg',
+            revival: 'https://raw.githubusercontent.com/thakursaajid-design/m01ElephantClockSGV/main/m14Revival.jpg',
+            quiz: 'https://raw.githubusercontent.com/thakursaajid-design/m01ElephantClockSGV/main/m15Quiz.jpg',
+            zoology: 'https://raw.githubusercontent.com/thakursaajid-design/m01ElephantClockSGV/main/m16ZoologHerbalVital.jpg',
+            herbal: 'https://raw.githubusercontent.com/thakursaajid-design/m01ElephantClockSGV/main/m17ZoologHerbalVital.jpg',
+            vital: 'https://raw.githubusercontent.com/thakursaajid-design/m01ElephantClockSGV/main/m18ZoologHerbalVital.jpg',
+            humanbody: 'https://raw.githubusercontent.com/thakursaajid-design/m01ElephantClockSGV/main/m19HumanBody.jpg',
+            zero: 'https://raw.githubusercontent.com/thakursaajid-design/m01ElephantClockSGV/main/m20ZeroTraingle.jpg',
+            triangle: 'https://raw.githubusercontent.com/thakursaajid-design/m01ElephantClockSGV/main/m21ZeroTraingle.jpg',
+            golden: 'https://raw.githubusercontent.com/thakursaajid-design/m01ElephantClockSGV/main/m22GoldenRatio.jpg',
+            forms: 'https://raw.githubusercontent.com/thakursaajid-design/m01ElephantClockSGV/main/m23Architeture.jpg',
+            masterpieces: 'https://raw.githubusercontent.com/thakursaajid-design/m01ElephantClockSGV/main/m24Architeture.jpg',
+            arabesque: 'https://raw.githubusercontent.com/thakursaajid-design/m01ElephantClockSGV/main/m25Architeture.jpg',
+            virtualbook: 'https://raw.githubusercontent.com/thakursaajid-design/m01ElephantClockSGV/main/m26VirtualBook.jpg',
+            polymath: 'https://raw.githubusercontent.com/thakursaajid-design/m01ElephantClockSGV/main/m27Polymath.jpg',
+            roots: 'https://raw.githubusercontent.com/thakursaajid-design/m01ElephantClockSGV/main/m28Roots.jpg',
+            flight: 'https://raw.githubusercontent.com/thakursaajid-design/m01ElephantClockSGV/main/m29FlightAviator.jpg',
+            invention: 'https://raw.githubusercontent.com/thakursaajid-design/m01ElephantClockSGV/main/m30invention.jpg',
+            pharmacist: 'https://raw.githubusercontent.com/thakursaajid-design/m01ElephantClockSGV/main/m31Pharmacist.jpg',
+            medicine: 'https://raw.githubusercontent.com/thakursaajid-design/m01ElephantClockSGV/main/m32HarbalMedicine.jpg',
+            waterraise: 'https://raw.githubusercontent.com/thakursaajid-design/m01ElephantClockSGV/main/m33WaterRaise.jpg',
+            robot: 'https://raw.githubusercontent.com/thakursaajid-design/m01ElephantClockSGV/main/m34RobotMan.jpg',
+            livingearth: 'https://raw.githubusercontent.com/thakursaajid-design/m01ElephantClockSGV/main/m35LivingEarth.jpg',
+            ibnbattuta: 'https://raw.githubusercontent.com/thakursaajid-design/m01ElephantClockSGV/main/m36IbnBatuta.jpg',
+            routes: 'https://raw.githubusercontent.com/thakursaajid-design/m01ElephantClockSGV/main/m37RoutesVarious.jpg',
+            explorers: 'https://raw.githubusercontent.com/thakursaajid-design/m01ElephantClockSGV/main/m38Exolorers.jpg',
+            architect: 'https://raw.githubusercontent.com/thakursaajid-design/m01ElephantClockSGV/main/m39Architect.jpg',
+            timeLine: 'https://raw.githubusercontent.com/thakursaajid-design/m01ElephantClockSGV/main/m40TimeLine.jpg'
+        };
+
+        // ─── DATA (USING SVG COORDINATES) ───
+        const locations = [
+            { id: 'elephant', label: '01 Elephant Clock', code: '9EB', x: 1450, y: 990, category: 'history' },
+            { id: 'castle', label: '02 Castle Clock', code: '9DB', x: 3890, y: 1505, category: 'history' },
+            { id: 'waterwheel', label: '03 Water Wheel', code: '9GE, 9GH, 9GF, 9GG, 9GD', x: 4760, y: 680, category: 'history' },
+            { id: 'sliding', label: '04 Sliding', code: 'SLI', x: 1383, y: 550, category: 'engineering' },
+            { id: 'flipbook', label: '05 Flip Book', code: '1FA', x: 1900, y: 550, category: 'engineering' },
+            { id: 'learningtower', label: '06 Learning Tower', code: '4A', x: 2196, y: 1150, category: 'astronomy' },
+            { id: 'astronomy', label: '07 Astronomy', code: '5D', x: 3469, y: 920, category: 'astronomy' },
+            { id: 'objecttheater', label: '08 Object Theater', code: '8EO', x: 4740, y: 1695, category: 'astronomy' },
+            { id: 'townplanning', label: '09 Town Planning', code: '3FA', x: 1950, y: 1850, category: 'engineering' },
+            { id: 'windmill', label: '10 Windmill', code: '7AC', x: 2922, y: 1480, category: 'engineering' },
+            { id: 'windtower', label: '11 Wind Tower', code: '7BC', x: 3548, y: 1480, category: 'engineering' },
+            { id: 'intro', label: '12 Intro', code: '1A', x: 731, y: 200, category: 'intro' },
+            { id: 'books', label: '13 Books', code: '1CA', x: 730, y: 965, category: 'intro' },
+            { id: 'revival', label: '14 Revival', code: '1LO', x: 339, y: 790, category: 'intro' },
+            { id: 'quiz', label: '15 Quiz', code: '1JO', x: 313, y: 1162, category: 'intro' },
+            { id: 'zoology', label: '16 Zoology', code: '2CB', x: 522, y: 1316, category: 'biology' },
+            { id: 'herbal', label: '17 Herbal Med', code: '2CC', x: 783, y: 1346, category: 'biology' },
+            { id: 'vital', label: '18 Vital Sigh', code: '2AO', x: 939, y: 1480, category: 'biology' },
+            { id: 'humanbody', label: '19 Human Body', code: '2E', x: 1060, y: 1625, category: 'biology' },
+            { id: 'zero', label: '20 Zero', code: '6DO', x: 1160, y: 1855, category: 'science' },
+            { id: 'triangle', label: '21 Triangle', code: '6CO', x: 1409, y: 1855, category: 'science' },
+            { id: 'golden', label: '22 Golden Ratio', code: '3EC', x: 1560, y: 1660, category: 'science' },
+            { id: 'forms', label: '23 Forms', code: '3D1', x: 2355, y: 1673, category: 'history' },
+            { id: 'masterpieces', label: '24 Masterpieces', code: '3D2', x: 2355, y: 1800, category: 'history' },
+            { id: 'arabesque', label: '25 Arabesque', code: '3D3', x: 2355, y: 1910, category: 'history' },
+            { id: 'virtualbook', label: '26 Virtual Book', code: '4BB', x: 1999, y: 815, category: 'culture' },
+            { id: 'polymath', label: '27 Polymath', code: '4BA', x: 2400, y: 825, category: 'culture' },
+            { id: 'roots', label: '28 Roots', code: '9KO', x: 2843, y: 1675, category: 'engineering' },
+            { id: 'flight', label: '29 Flight', code: '9CO', x: 2940, y: 1810, category: 'engineering' },
+            { id: 'invention', label: '30 Invention', code: '1CB', x: 3500, y: 1810, category: 'engineering' },
+            { id: 'pharmacist', label: '31 Pharmacist', code: '8CB', x: 4278, y: 1580, category: 'biology' },
+            { id: 'medicine', label: '32 Medicine', code: '8CC', x: 4330, y: 1305, category: 'biology' },
+            { id: 'waterraise', label: '33 Water Raise', code: '9GC', x: 4800, y: 1118, category: 'biology' },
+            { id: 'robot', label: '34 Robot', code: '9FA', x: 4174, y: 772, category: 'engineering' },
+            { id: 'livingearth', label: '35 Living Earth', code: '5BB', x: 3790, y: 540, category: 'history' },
+            { id: 'ibnbattuta', label: '36 Ibn Batuta', code: '5EC', x: 3475, y: 500, category: 'history' },
+            { id: 'routes', label: '37 Routes', x: 3208, y: 360, category: 'astronomy' },
+            { id: 'explorers', label: '38 Explorers', code: '5EB', x: 2960, y: 500, category: 'history' },
+            { id: 'architect', label: '39 Architect', code: '7F', x: 2504, y: 500, category: 'astronomy' },
+            { id: 'timeLine', label: '40 TimeLine', x: 2800, y: 900, category: 'astronomy' },
+        ];
+
+        // ─── LOGIN ───
+        const VALID_USER = 'Saajid_Thakur';
+        const VALID_PASS = '105475';
+
+        // ─── SHOW POPUP IMAGE (reusable for both location and image buttons) ─── 
+// ─── SHOW POPUP IMAGE (with zoom support) ───
+function showPopup(imageUrl, label) {
+    const existingPopup = document.querySelector('.popup-overlay');
+    if (existingPopup) {
+        existingPopup.remove();
+    }
+
+    const overlay = document.createElement('div');
+    overlay.className = 'popup-overlay';
+    overlay.style.overflow = 'hidden';
+    overlay.style.touchAction = 'none';
+
+    // ─── Image Container (for zoom/pan) ───
+    const imgContainer = document.createElement('div');
+    imgContainer.style.cssText = `
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        touch-action: none;
+        cursor: grab;
+        position: relative;
+    `;
+
+    const img = document.createElement('img');
+    img.src = imageUrl;
+    img.alt = label;
+    img.style.cssText = `
+        max-width: 92%;
+        max-height: 92%;
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+        object-fit: contain;
+        pointer-events: none;
+        transition: transform 0.1s ease;
+        transform-origin: center center;
+        user-select: none;
+        -webkit-user-drag: none;
+    `;
+    img.onerror = function() {
+        this.src = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22300%22%3E%3Crect width=%22400%22 height=%22300%22 fill=%22%23333%22/%3E%3Ctext x=%22200%22 y=%22150%22 font-family=%22Arial%22 font-size=%2220%22 fill=%22%23fff%22 text-anchor=%22middle%22%3EImage not found%3C/text%3E%3C/svg%3E';
+    };
+
+    imgContainer.appendChild(img);
+
+    // ─── Hint Text ───
+    const hint = document.createElement('div');
+    hint.className = 'close-hint';
+    hint.textContent = '🔄 Scroll/Pinch to zoom • Click to close';
+    hint.style.cssText = `
+        position: absolute;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: rgba(255,255,255,0.6);
+        font-size: 14px;
+        font-family: 'Segoe UI', Arial, sans-serif;
+        background: rgba(0,0,0,0.4);
+        padding: 8px 20px;
+        border-radius: 30px;
+        pointer-events: none;
+        z-index: 10;
+        white-space: nowrap;
+    `;
+
+    // ─── Timer Bar ───
+    const timerBar = document.createElement('div');
+    timerBar.className = 'timer-bar';
+    timerBar.style.cssText = `
+        position: absolute;
+        bottom: 80px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 200px;
+        height: 4px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 4px;
+        overflow: hidden;
+        pointer-events: none;
+        z-index: 10;
+    `;
+    const timerFill = document.createElement('div');
+    timerFill.className = 'fill';
+    timerFill.style.cssText = `
+        height: 100%;
+        background: #ef4444;
+        border-radius: 4px;
+        animation: timerShrink 20s linear forwards;
+        width: 100%;
+    `;
+    timerBar.appendChild(timerFill);
+
+    overlay.appendChild(imgContainer);
+    overlay.appendChild(hint);
+    overlay.appendChild(timerBar);
+
+    // ─── ZOOM & PAN STATE ───
+    let zoomLevel = 1;
+    const MIN_ZOOM = 1;
+    const MAX_ZOOM = 4;
+    let panX = 0;
+    let panY = 0;
+    let isDragging = false;
+    let startX, startY, startPanX, startPanY;
+    let lastTouchDist = 0;
+
+    function updateTransform() {
+        img.style.transform = `scale(${zoomLevel}) translate(${panX / zoomLevel}px, ${panY / zoomLevel}px)`;
+    }
+
+    // ─── Mouse Wheel Zoom ───
+    imgContainer.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? -0.1 : 0.1;
+        zoomLevel = Math.min(Math.max(zoomLevel + delta, MIN_ZOOM), MAX_ZOOM);
+        if (zoomLevel === 1) {
+            panX = 0;
+            panY = 0;
+        }
+        updateTransform();
+    }, { passive: false });
+
+    // ─── Mouse Drag ───
+    imgContainer.addEventListener('mousedown', (e) => {
+        if (zoomLevel > 1) {
+            isDragging = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            startPanX = panX;
+            startPanY = panY;
+            imgContainer.style.cursor = 'grabbing';
+            e.preventDefault();
+        }
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        panX = startPanX + dx;
+        panY = startPanY + dy;
+        updateTransform();
+    });
+
+    document.addEventListener('mouseup', () => {
+        if (isDragging) {
+            isDragging = false;
+            imgContainer.style.cursor = 'grab';
+        }
+    });
+
+    // ─── Touch Drag ───
+    let touchStartX, touchStartY, touchStartPanX, touchStartPanY;
+    let isTouchDragging = false;
+
+    imgContainer.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 1 && zoomLevel > 1) {
+            const t = e.touches[0];
+            touchStartX = t.clientX;
+            touchStartY = t.clientY;
+            touchStartPanX = panX;
+            touchStartPanY = panY;
+            isTouchDragging = true;
+        }
+    }, { passive: true });
+
+    imgContainer.addEventListener('touchmove', (e) => {
+        if (e.touches.length === 1 && isTouchDragging) {
+            const t = e.touches[0];
+            const dx = t.clientX - touchStartX;
+            const dy = t.clientY - touchStartY;
+            panX = touchStartPanX + dx;
+            panY = touchStartPanY + dy;
+            updateTransform();
+            e.preventDefault();
+        }
+    }, { passive: false });
+
+    imgContainer.addEventListener('touchend', () => {
+        isTouchDragging = false;
+    }, { passive: true });
+
+    // ─── Pinch Zoom (Mobile) ───
+    imgContainer.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 2) {
+            const t = e.touches;
+            lastTouchDist = Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+        }
+    }, { passive: true });
+
+    imgContainer.addEventListener('touchmove', (e) => {
+        if (e.touches.length === 2) {
+            const t = e.touches;
+            const dist = Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+            const delta = dist - lastTouchDist;
+            zoomLevel = Math.min(Math.max(zoomLevel + delta * 0.01, MIN_ZOOM), MAX_ZOOM);
+            lastTouchDist = dist;
+            if (zoomLevel === 1) {
+                panX = 0;
+                panY = 0;
+            }
+            updateTransform();
+            e.preventDefault();
+        }
+    }, { passive: false });
+
+    // ─── Auto-Close ───
+    const autoCloseTimer = setTimeout(() => {
+        overlay.remove();
+    }, 20000);
+
+    // ─── Close on Click (but not on drag) ───
+    let clickStartX = 0;
+    let clickStartY = 0;
+    overlay.addEventListener('mousedown', (e) => {
+        clickStartX = e.clientX;
+        clickStartY = e.clientY;
+    });
+
+    overlay.addEventListener('click', (e) => {
+        const dx = e.clientX - clickStartX;
+        const dy = e.clientY - clickStartY;
+        if (Math.sqrt(dx*dx + dy*dy) < 10) {
+            clearTimeout(autoCloseTimer);
+            overlay.remove();
+        }
+    });
+
+    // ─── Close on Escape ───
+    document.addEventListener('keydown', function closeOnEscape(e) {
+        if (e.key === 'Escape') {
+            clearTimeout(autoCloseTimer);
+            overlay.remove();
+            document.removeEventListener('keydown', closeOnEscape);
+        }
+    });
+
+    // ─── Double-click to reset zoom ───
+    img.addEventListener('dblclick', () => {
+        zoomLevel = 1;
+        panX = 0;
+        panY = 0;
+        updateTransform();
+    });
+
+    document.body.appendChild(overlay);
+}
+
+        // ─── OPEN IMAGE FROM LOGIN BUTTONS ───
+        function openImagePopup(url, label) {
+            showPopup(url, label);
+        }
+
+        // ─── LOGIN HANDLER ───
+        function handleLogin() {
+            const user = document.getElementById('usernameInput').value.trim();
+            const pass = document.getElementById('passwordInput').value.trim();
+            const error = document.getElementById('loginError');
+
+            if (user === VALID_USER && pass === VALID_PASS) {
+                error.style.display = 'none';
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'flex';
+                document.getElementById('userBadge').textContent = '📧 thakursaajid@gmail.com';
+                initApp();
+            } else {
+                error.style.display = 'block';
+                document.getElementById('passwordInput').value = '';
+                document.getElementById('passwordInput').focus();
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && document.getElementById('loginScreen').style.display !== 'none') {
+                handleLogin();
+            }
+        });
+
+        // ─── APP STATE ───
+        let highlightTimer = null;
+        let activeSpot = null;
+        let activeLocationId = null;
+
+        // ─── RENDER BUTTONS ───
+        function renderButtons() {
+            const grid = document.getElementById('buttonGrid');
+            grid.innerHTML = '';
+
+            const sequence = [
+                'elephant', 'castle', 'waterwheel', 'sliding', 'flipbook',
+                'learningtower', 'astronomy', 'objecttheater', 'townplanning',
+                'windmill', 'windtower', 'intro', 'books', 'revival', 'quiz',
+                'zoology', 'herbal', 'vital', 'humanbody', 'zero',
+                'triangle', 'golden', 'forms', 'masterpieces', 'arabesque',
+                'virtualbook', 'polymath', 'roots', 'flight',
+                'invention', 'pharmacist', 'medicine', 'waterraise', 'robot', 'livingearth',
+                'ibnbattuta', 'routes', 'explorers', 'architect', 'timeLine'
+            ];
+
+            const locMap = {};
+            locations.forEach(l => { locMap[l.id] = l; });
+
+            sequence.forEach(id => {
+                const loc = locMap[id];
+                if (!loc) return;
+
+                const btn = document.createElement('button');
+                btn.className = `location-btn btn-${loc.category || 'intro'}`;
+                btn.dataset.id = loc.id;
+
+                const labelSpan = document.createElement('span');
+                labelSpan.textContent = loc.label;
+
+                const codeSpan = document.createElement('span');
+                codeSpan.className = 'code';
+                codeSpan.textContent = loc.code || '';
+
+                btn.appendChild(labelSpan);
+                btn.appendChild(codeSpan);
+
+                btn.addEventListener('click', () => {
+                    handleLocationClick(loc, btn);
+                });
+
+                grid.appendChild(btn);
+            });
+        }
+
+        // ─── GET IMAGE POSITION INSIDE CONTAINER ───
+        function getImageDisplayRect() {
+            const container = document.getElementById('mapInner');
+            const img = document.getElementById('mapImage');
+            
+            const containerRect = container.getBoundingClientRect();
+            const containerWidth = containerRect.width;
+            const containerHeight = containerRect.height;
+            
+            const imgWidth = SVG_WIDTH;
+            const imgHeight = SVG_HEIGHT;
+            
+            const containerAspect = containerWidth / containerHeight;
+            const imgAspect = imgWidth / imgHeight;
+            
+            let displayWidth, displayHeight, offsetX, offsetY;
+            
+            if (containerAspect > imgAspect) {
+                displayHeight = containerHeight;
+                displayWidth = containerHeight * imgAspect;
+                offsetX = (containerWidth - displayWidth) / 2;
+                offsetY = 0;
+            } else {
+                displayWidth = containerWidth;
+                displayHeight = containerWidth / imgAspect;
+                offsetX = 0;
+                offsetY = (containerHeight - displayHeight) / 2;
+            }
+            
+            return {
+                displayWidth,
+                displayHeight,
+                offsetX,
+                offsetY,
+                containerWidth,
+                containerHeight
+            };
+        }
+
+        // ─── CONVERT SVG COORDINATES TO PIXEL POSITION ───
+        function svgToScreenPixel(svgX, svgY) {
+            const rect = getImageDisplayRect();
+            const pixelX = (svgX / SVG_WIDTH) * rect.displayWidth + rect.offsetX;
+            const pixelY = (svgY / SVG_HEIGHT) * rect.displayHeight + rect.offsetY;
+            return { x: pixelX, y: pixelY };
+        }
+
+        // ─── CONVERT SVG COORDINATES TO PERCENTAGE ───
+        function svgToPercent(svgX, svgY) {
+            const rect = getImageDisplayRect();
+            const pixelPos = svgToScreenPixel(svgX, svgY);
+            const percentX = (pixelPos.x / rect.containerWidth) * 100;
+            const percentY = (pixelPos.y / rect.containerHeight) * 100;
+            return { x: percentX, y: percentY };
+        }
+
+        // ─── HANDLE LOCATION CLICK ───
+        function handleLocationClick(loc, btn) {
+            if (highlightTimer) {
+                clearTimeout(highlightTimer);
+                highlightTimer = null;
+            }
+
+            document.querySelectorAll('.location-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            let label = loc.label;
+            activeLocationId = loc.id;
+
+            centerMapOnLocation(loc.x, loc.y);
+
+            const pos = svgToPercent(loc.x, loc.y);
+            showHighlight(pos.x, pos.y, label, loc.id);
+
+            btn.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }
+
+        // ─── CENTER MAP ON LOCATION ───
+        function centerMapOnLocation(svgX, svgY) {
+            const wrapperRect = wrapper.getBoundingClientRect();
+            const containerWidth = wrapperRect.width;
+            const containerHeight = wrapperRect.height;
+
+            const pixelPos = svgToScreenPixel(svgX, svgY);
+            
+            const targetX = pixelPos.x;
+            const targetY = pixelPos.y;
+
+            const centerX = containerWidth / 2;
+            const centerY = containerHeight / 2;
+
+            let newOffsetX = centerX - targetX;
+            let newOffsetY = centerY - targetY;
+
+            if (scale !== 1) {
+                newOffsetX = newOffsetX / scale;
+                newOffsetY = newOffsetY / scale;
+            }
+
+            offsetX = newOffsetX;
+            offsetY = newOffsetY;
+
+            clampOffset();
+            updateTransform();
+        }
+
+        // ─── CLAMP OFFSET ───
+        function clampOffset() {
+            const wrapperRect = wrapper.getBoundingClientRect();
+            const containerWidth = wrapperRect.width;
+            const containerHeight = wrapperRect.height;
+
+            const overflowX = (containerWidth * scale - containerWidth) / 2;
+            const overflowY = (containerHeight * scale - containerHeight) / 2;
+
+            if (scale > 1) {
+                offsetX = Math.max(-overflowX, Math.min(overflowX, offsetX));
+                offsetY = Math.max(-overflowY, Math.min(overflowY, offsetY));
+            } else {
+                offsetX = 0;
+                offsetY = 0;
+            }
+        }
+
+        // ─── SHOW HIGHLIGHT ───
+        function showHighlight(xPercent, yPercent, label, locationId) {
+            const container = document.getElementById('highlightContainer');
+
+            if (activeSpot) {
+                activeSpot.remove();
+                activeSpot = null;
+            }
+
+            const spot = document.createElement('div');
+            spot.className = 'highlight-spot';
+            spot.style.left = xPercent + '%';
+            spot.style.top = yPercent + '%';
+            spot.style.opacity = '1';
+            spot.dataset.locationId = locationId;
+
+            for (let i = 0; i < 3; i++) {
+                const ring = document.createElement('div');
+                ring.className = 'ring';
+                spot.appendChild(ring);
+            }
+
+            const labelEl = document.createElement('div');
+            labelEl.className = 'label';
+            labelEl.textContent = label;
+            spot.appendChild(labelEl);
+
+            const hint = document.createElement('div');
+            hint.className = 'click-hint';
+            hint.textContent = '👆 Click to view image';
+            spot.appendChild(hint);
+
+            spot.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const imageUrl = imageUrls[locationId];
+                if (imageUrl) {
+                    showPopup(imageUrl, label);
+                }
+            });
+
+            container.appendChild(spot);
+            activeSpot = spot;
+
+            highlightTimer = setTimeout(() => {
+                clearHighlight();
+            }, 7000);
+        }
+
+        function clearHighlight() {
+            if (activeSpot) {
+                activeSpot.classList.add('fade-out');
+                setTimeout(() => {
+                    if (activeSpot) {
+                        activeSpot.remove();
+                        activeSpot = null;
+                    }
+                }, 600);
+            }
+            document.querySelectorAll('.location-btn').forEach(b => b.classList.remove('active'));
+            activeLocationId = null;
+            if (highlightTimer) {
+                clearTimeout(highlightTimer);
+                highlightTimer = null;
+            }
+        }
+
+        // ─── MAP ZOOM + PAN ───
+        let scale = 1;
+        const MIN_SCALE = 0.8;
+        const MAX_SCALE = 5.0;
+        let offsetX = 0;
+        let offsetY = 0;
+
+        const wrapper = document.getElementById('mapWrapper');
+        const inner = document.getElementById('mapInner');
+
+        function updateTransform() {
+            inner.style.transform = `scale(${scale}) translate(${offsetX / scale}px, ${offsetY / scale}px)`;
+        }
+
+        // ─── Drag ───
+        let isDragging = false;
+        let dragStartX, dragStartY, dragStartOffsetX, dragStartOffsetY;
+
+        wrapper.addEventListener('mousedown', (e) => {
+            if (e.button === 0) {
+                isDragging = true;
+                dragStartX = e.clientX;
+                dragStartY = e.clientY;
+                dragStartOffsetX = offsetX;
+                dragStartOffsetY = offsetY;
+                wrapper.style.cursor = 'grabbing';
+                e.preventDefault();
+            }
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            offsetX = dragStartOffsetX + (e.clientX - dragStartX);
+            offsetY = dragStartOffsetY + (e.clientY - dragStartY);
+            clampOffset();
+            updateTransform();
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isDragging) {
+                isDragging = false;
+                wrapper.style.cursor = 'grab';
+            }
+        });
+
+        // ─── Touch Drag ───
+        let touchDragStartX, touchDragStartY, touchDragStartOffsetX, touchDragStartOffsetY;
+        let isTouchDragging = false;
+
+        wrapper.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                const t = e.touches[0];
+                touchDragStartX = t.clientX;
+                touchDragStartY = t.clientY;
+                touchDragStartOffsetX = offsetX;
+                touchDragStartOffsetY = offsetY;
+                isTouchDragging = true;
+            }
+        }, { passive: true });
+
+        wrapper.addEventListener('touchmove', (e) => {
+            if (e.touches.length === 1 && isTouchDragging) {
+                const t = e.touches[0];
+                offsetX = touchDragStartOffsetX + (t.clientX - touchDragStartX);
+                offsetY = touchDragStartOffsetY + (t.clientY - touchDragStartY);
+                clampOffset();
+                updateTransform();
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        wrapper.addEventListener('touchend', () => {
+            isTouchDragging = false;
+        }, { passive: true });
+
+        // ─── Pinch Zoom ───
+        let lastPinchDist = 0;
+
+        wrapper.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 2) {
+                const t = e.touches;
+                lastPinchDist = Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+            }
+        }, { passive: true });
+
+        wrapper.addEventListener('touchmove', (e) => {
+            if (e.touches.length === 2) {
+                const t = e.touches;
+                const dist = Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+                const delta = dist - lastPinchDist;
+                scale = Math.min(Math.max(scale + delta * 0.01, MIN_SCALE), MAX_SCALE);
+                lastPinchDist = dist;
+                if (scale === 1) {
+                    offsetX = 0;
+                    offsetY = 0;
+                } else {
+                    clampOffset();
+                }
+                updateTransform();
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        // ─── Mouse Wheel ───
+        wrapper.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const delta = e.deltaY > 0 ? -0.1 : 0.1;
+            scale = Math.min(Math.max(scale + delta, MIN_SCALE), MAX_SCALE);
+            if (scale === 1) {
+                offsetX = 0;
+                offsetY = 0;
+            } else {
+                clampOffset();
+            }
+            updateTransform();
+        }, { passive: false });
+
+        // ─── Zoom Functions ───
+        function zoomIn() {
+            scale = Math.min(scale + 0.25, MAX_SCALE);
+            clampOffset();
+            updateTransform();
+        }
+
+        function zoomOut() {
+            scale = Math.max(scale - 0.25, MIN_SCALE);
+            if (scale === 1) {
+                offsetX = 0;
+                offsetY = 0;
+            } else {
+                clampOffset();
+            }
+            updateTransform();
+        }
+
+        function resetView() {
+            scale = 1;
+            offsetX = 0;
+            offsetY = 0;
+            updateTransform();
+            clearHighlight();
+            document.querySelectorAll('.location-btn').forEach(b => b.classList.remove('active'));
+        }
+
+        // ─── RECALCULATE POSITIONS ON RESIZE ───
+        function recalculatePositions() {
+            if (activeSpot) {
+                const activeBtn = document.querySelector('.location-btn.active');
+                if (activeBtn) {
+                    const locId = activeBtn.dataset.id;
+                    const loc = locations.find(l => l.id === locId);
+                    if (loc) {
+                        const pos = svgToPercent(loc.x, loc.y);
+                        activeSpot.style.left = pos.x + '%';
+                        activeSpot.style.top = pos.y + '%';
+                    }
+                }
+            }
+        }
+
+        // ─── INIT ───
+        function initApp() {
+            renderButtons();
+            updateTransform();
+            wrapper.style.cursor = 'grab';
+            
+            window.addEventListener('resize', () => {
+                recalculatePositions();
+            });
+            
+            window.addEventListener('orientationchange', () => {
+                setTimeout(recalculatePositions, 500);
+            });
+        }
+
+        console.log('🏛️ KAUST Museum Map loaded!');
+        console.log('📍 Click any location button → highlight appears on map.');
+        console.log('👆 Click the highlight (red rings) → opens image for 20 seconds.');
+        console.log('📧 thakursaajid@gmail.com');
+    </script>
+
+</body>
+</html>
